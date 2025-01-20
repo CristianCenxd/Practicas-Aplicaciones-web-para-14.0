@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Películas</title>
+    
+  
+    <link rel="stylesheet" href="css/stile.css">
+    
+</head>
+<body>
+    <h1>Gestión de Películas</h1>
+
+    <!-- Ver todas las películas -->
+    <button onclick="getAllMovies()">Ver todas las películas</button>
+
+    <div class="movie-list">
+        <h2>Películas</h2>
+        <ul id="moviesList"></ul>
+    </div>
+
+    <!-- Buscar una película por ID -->
+    <h2>Buscar Película por ID</h2>
+    <input type="number" id="searchId" placeholder="Ingresa el ID de la película">
+    <button onclick="getMovieById()">Buscar</button>
+    <div id="movieDetails"></div>
+    <div id="searchError" class="error"></div>
+
+    <!-- Agregar nueva película -->
+<h2>Agregar Nueva Película</h2>
+<div class="movie-form">
+    <input type="text" id="newTitle" placeholder="Título" required>
+    <input type="text" id="newDirector" placeholder="Director">
+    <input type="text" id="newGenero" placeholder="Género">
+    <input type="number" id="newPuntuacion" placeholder="Puntuación (0-10)" min="0" max="10">
+    <input type="text" id="newRating" placeholder="Rating">
+    <input type="number" id="newAno" placeholder="Año de publicación">
+    <button onclick="addMovie()">Agregar</button>
+</div>
+<div id="addError" class="error"></div>
+
+<script>
+    // Función para agregar una nueva película
+    async function addMovie() {
+        const title = document.getElementById('newTitle').value;
+        const director = document.getElementById('newDirector').value;
+        const genero = document.getElementById('newGenero').value;
+        const puntuacion = document.getElementById('newPuntuacion').value;
+        const rating = document.getElementById('newRating').value;
+        const ano = document.getElementById('newAno').value;
+
+        // Validar que los datos sean correctos
+        if (!title || !director || !genero || !puntuacion || !rating || !ano) {
+            document.getElementById('addError').textContent = 'Por favor, complete todos los campos correctamente.';
+            return;
+        }
+        if (puntuacion < 0 || puntuacion > 10) {
+            document.getElementById('addError').textContent = 'La puntuación debe estar entre 0 y 10.';
+            return;
+        }
+        if (ano < 1900 || ano > new Date().getFullYear()) {
+            document.getElementById('addError').textContent = 'El año de publicación debe ser mayor que 1900 y no puede ser mayor que el año actual.';
+            return;
+        }
+
+        const newMovie = {
+            Titulo: title,
+            Director: director,
+            Genero: genero,
+            Puntuacion: puntuacion,
+            Rating: rating,
+            Ano_Publicacion: ano
+        };
+
+        const response = await fetch('http://localhost:3000/peliculas', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newMovie)
+        });
+
+        const result = await response.json();
+        if (result.error) {
+            document.getElementById('addError').textContent = 'Hubo un error al agregar la película. Por favor intente de nuevo.';
+        } else {
+            alert('Película agregada con éxito');
+            getAllMovies(); // Actualizar lista de películas
+        }
+    }
+</script>
+
+
+    <!-- Actualizar una película -->
+    <h2>Actualizar Película</h2>
+    <input type="number" id="updateId" placeholder="ID de la película a actualizar">
+    <button onclick="fetchMovieToUpdate()">Buscar para Actualizar</button>
+
+    <div id="updateForm" class="movie-form" style="display:none;">
+        <h3>Actualizar Detalles</h3>
+        <input type="text" id="updateTitle" placeholder="Título">
+        <input type="text" id="updateDirector" placeholder="Director">
+        <input type="text" id="updateGenero" placeholder="Género">
+        <input type="number" id="updatePuntuacion" placeholder="Puntuación">
+        <input type="text" id="updateRating" placeholder="Rating">
+        <input type="number" id="updateAno" placeholder="Año de publicación">
+        <button onclick="updateMovie()">Guardar cambios</button>
+    </div>
+
+    <!-- Eliminar una película -->
+    <h2>Eliminar Película</h2>
+    <input type="number" id="deleteId" placeholder="ID de la película a eliminar">
+    <button onclick="fetchMovieToDelete()">Buscar para Eliminar</button>
+
+    <div id="deleteForm" class="movie-form" style="display:none;">
+        <h3>¿Estás seguro de que deseas eliminar esta película?</h3>
+        <p id="deleteMovieDetails"></p>
+        <button onclick="deleteMovie()">Eliminar</button>
+    </div>
+
+    <script>
+        // Función para obtener todas las películas
+        async function getAllMovies() {
+            const response = await fetch('http://localhost:3000/peliculas');
+            const movies = await response.json();
+            const moviesList = document.getElementById('moviesList');
+            moviesList.innerHTML = '';
+            movies.forEach(movie => {
+                const li = document.createElement('li');
+                li.textContent = `${movie.Titulo} - ${movie.Director} - ${movie.Genero}`;
+                moviesList.appendChild(li);
+            });
+        }
+
+        // Función para buscar una película por ID
+        async function getMovieById() {
+            const id = document.getElementById('searchId').value;
+            const response = await fetch(`http://localhost:3000/peliculas/${id}`);
+
+            if (response.status === 404) {
+                document.getElementById('searchError').textContent = 'Película no encontrada. Por favor ingresa una ID válida.';
+                document.getElementById('movieDetails').innerHTML = '';
+            } else {
+                const movie = await response.json();
+                document.getElementById('searchError').textContent = '';
+                document.getElementById('movieDetails').innerHTML = `
+                    <h3>${movie.Titulo}</h3>
+                    <p>Director: ${movie.Director}</p>
+                    <p>Género: ${movie.Genero}</p>
+                    <p>Puntuación: ${movie.Puntuacion}</p>
+                    <p>Rating: ${movie.Rating}</p>
+                    <p>Año de Publicación: ${movie.Ano_Publicacion}</p>
+                `;
+            }
+        }
+
+        // Función para agregar una nueva película
+        async function addMovie() {
+            const title = document.getElementById('newTitle').value;
+            const director = document.getElementById('newDirector').value;
+            const genero = document.getElementById('newGenero').value;
+            const puntuacion = document.getElementById('newPuntuacion').value;
+            const rating = document.getElementById('newRating').value;
+            const ano = document.getElementById('newAno').value;
+
+            // Validar que los datos sean correctos
+            if (!title || !director || !genero || !puntuacion || !rating || !ano) {
+                document.getElementById('addError').textContent = 'Por favor, complete todos los campos correctamente.';
+                return;
+            }
+            if (puntuacion < 0 || puntuacion > 10) {
+                document.getElementById('addError').textContent = 'La puntuación debe estar entre 0 y 10.';
+                return;
+            }
+
+            const newMovie = {
+                Titulo: title,
+                Director: director,
+                Genero: genero,
+                Puntuacion: puntuacion,
+                Rating: rating,
+                Ano_Publicacion: ano
+            };
+
+            const response = await fetch('http://localhost:3000/peliculas', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newMovie)
+            });
+
+            const result = await response.json();
+            if (result.error) {
+                document.getElementById('addError').textContent = 'Hubo un error al agregar la película. Por favor intente de nuevo.';
+            } else {
+                alert('Película agregada con éxito');
+                getAllMovies(); // Actualizar lista de películas
+            }
+        }
+
+        // Función para obtener la película a actualizar
+        async function fetchMovieToUpdate() {
+            const id = document.getElementById('updateId').value;
+            const response = await fetch(`http://localhost:3000/peliculas/${id}`);
+
+            if (response.status === 404) {
+                alert('Película no encontrada');
+                document.getElementById('updateForm').style.display = 'none';
+            } else {
+                const movie = await response.json();
+                document.getElementById('updateForm').style.display = 'block';
+                document.getElementById('updateTitle').value = movie.Titulo;
+                document.getElementById('updateDirector').value = movie.Director;
+                document.getElementById('updateGenero').value = movie.Genero;
+                document.getElementById('updatePuntuacion').value = movie.Puntuacion;
+                document.getElementById('updateRating').value = movie.Rating;
+                document.getElementById('updateAno').value = movie.Ano_Publicacion;
+            }
+        }
+
+        // Función para actualizar la película
+        async function updateMovie() {
+            const id = document.getElementById('updateId').value;
+            const updatedMovie = {
+                Titulo: document.getElementById('updateTitle').value,
+                Director: document.getElementById('updateDirector').value,
+                Genero: document.getElementById('updateGenero').value,
+                Puntuacion: document.getElementById('updatePuntuacion').value,
+                Rating: document.getElementById('updateRating').value,
+                Ano_Publicacion: document.getElementById('updateAno').value
+            };
+
+            const response = await fetch(`http://localhost:3000/peliculas/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedMovie)
+            });
+
+            const result = await response.json();
+            alert(result.message);
+        }
+
+        // Función para obtener la película a eliminar
+        async function fetchMovieToDelete() {
+            const id = document.getElementById('deleteId').value;
+            const response = await fetch(`http://localhost:3000/peliculas/${id}`);
+
+            if (response.status === 404) {
+                alert('Película no encontrada');
+                document.getElementById('deleteForm').style.display = 'none';
+            } else {
+                const movie = await response.json();
+                document.getElementById('deleteForm').style.display = 'block';
+                document.getElementById('deleteMovieDetails').textContent = `${movie.Titulo} - ${movie.Director} - ${movie.Genero}`;
+            }
+        }
+
+        // Función para eliminar la película
+        async function deleteMovie() {
+            const id = document.getElementById('deleteId').value;
+            const response = await fetch(`http://localhost:3000/peliculas/${id}`, {
+                method: 'DELETE',
+            });
+
+            const result = await response.json();
+            alert(result.message);
+        }
+    </script>
+</body>
+</html>

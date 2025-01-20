@@ -1,0 +1,70 @@
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    background-color: #f4f4f9;
+    color: #333;
+}
+
+h1 {
+    text-align: center;
+    color: #5f6368;
+}
+
+h2, h3 {
+    color: #3f51b5;
+}
+
+button {
+    background-color: #3f51b5;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #283593;
+}
+
+.movie-list, .movie-form {
+    margin-bottom: 20px;
+}
+
+.movie-form input {
+    padding: 10px;
+    margin: 10px 0;
+    width: 100%;
+    max-width: 400px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+.movie-form button {
+    width: 100%;
+}
+
+.movie-list ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.movie-list li {
+    padding: 5px;
+    background-color: #e3f2fd;
+    margin-bottom: 10px;
+    border-radius: 5px;
+}
+
+#deleteForm {
+    background-color: #ffebee;
+    border: 1px solid #f44336;
+    padding: 15px;
+    border-radius: 5px;
+}
+
+#deleteForm button {
+    background-color: #f44336;
+}
